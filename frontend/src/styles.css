@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500..800&family=DM+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Surfaces & Text */
+  --background: oklch(0.16 0.03 260);
+  --surface: oklch(0.22 0.04 260);
+  --surface-2: oklch(0.27 0.05 260);
+  --foreground: oklch(0.96 0.02 250);
+  --muted-foreground: oklch(0.58 0.04 260);
+  --border: oklch(0.30 0.04 260);
+
+  /* Brand & Feedback */
+  --primary: oklch(0.78 0.16 230);
+  --primary-foreground: oklch(0.16 0.03 260);
+  --correct: oklch(0.82 0.22 150);
+  --wrong: oklch(0.68 0.22 22);
+  --destructive: oklch(0.68 0.22 22);
+  --warning: oklch(0.82 0.17 75);
+
+  /* Podium */
+  --gold: #FFD700;
+  --silver: #C0C0C0;
+  --bronze: #CD7F32;
+
+  /* Typography */
+  --font-display: 'Syne', sans-serif;
+  --font-ui: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 30px color-mix(in oklab, var(--primary) 40%, transparent);
+  }
+
+  .shadow-primary {
+    box-shadow: 0 8px 30px -10px color-mix(in oklab, var(--primary) 60%, transparent);
+  }
+
+  .shadow-correct {
+    box-shadow: 0 0 60px -10px var(--correct);
+  }
+
+  .shadow-wrong {
+    box-shadow: 0 0 60px -10px var(--wrong);
+  }
+
+  .shadow-selection {
+    box-shadow: 0 4px 20px -8px color-mix(in oklab, var(--primary) 70%, transparent);
+  }
+}

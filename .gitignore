@@ -1,0 +1,92 @@
+# Arquivos de ambiente
+.env
+.env.*
+
+# Diretórios de dependências e build
+node_modules/
+dist/
+dist-ssr/
+backend/supabase/.temp/
+backend/supabase/.branches/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Arquivos de lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Arquivos temporários e cache
+*.tsbuildinfo
+.DS_Store
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# Configurações locais de IDE/Editor
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Sistema operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Supabase CLI
+backend/supabase/.env
+backend/supabase/.supabase
+backend/supabase/.config
+backend/supabase/.local
+backend/supabase/.cache
+
+# Frontend
+frontend/.env
+frontend/.env.*
+frontend/node_modules/
+frontend/dist/
+frontend/.DS_Store
+frontend/.vscode/
+frontend/.idea/
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/pnpm-lock.yaml
+frontend/*.tsbuildinfo
+frontend/.vercel
+
+# Backend
+backend/.env
+backend/node_modules/
+backend/.DS_Store
+backend/.vscode/
+backend/.idea/
+backend/package-lock.json
+backend/yarn.lock
+backend/pnpm-lock.yaml
+backend/*.tsbuildinfo
+
+# Exemplos de arquivos sensíveis
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.cert
+*.env.local
+*.env.development
+*.env.production
+*.env.test
+*.env.example
