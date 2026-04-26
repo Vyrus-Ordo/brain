@@ -8,8 +8,8 @@ interface TimerBarProps {
 const TimerBar: React.FC<TimerBarProps> = ({ duration, onExpire }) => {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [progress, setProgress] = useState(100);
-  const requestRef = useRef<number>();
-  const startTimeRef = useRef<number>();
+  const requestRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(0);
 
   const onExpireRef = useRef(onExpire);
   useEffect(() => {

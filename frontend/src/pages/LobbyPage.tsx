@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useGame } from '../contexts/GameContext';
 import BrainLogo from '../components/brain/BrainLogo';
 import CodeDisplay from '../components/brain/CodeDisplay';
@@ -12,7 +12,7 @@ import { useStartGame } from '../hooks/useStartGame';
 
 const LobbyPage: React.FC = () => {
   const { roomCode } = useParams<{ roomCode: string }>();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { state } = useGame();
   
   const { players, loading: playersLoading } = useRoomPresence(roomCode || null);

@@ -108,7 +108,7 @@ const GamePage: React.FC = () => {
     }
 
     let isMounted = true;
-    let channel: any = null;
+    // let channel: any = null;
 
     const checkAnswers = async () => {
       const { count, error } = await supabase

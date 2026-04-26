@@ -5,13 +5,7 @@ import PlayerListItem from '../components/brain/PlayerListItem';
 import PrimaryButton from '../components/brain/PrimaryButton';
 import SecondaryButton from '../components/brain/SecondaryButton';
 
-// Mock data for testing tie logic and podium
-const MOCK_FINAL_RANKING = [
-  { id: '3', name: 'Jessica', score: 850, isHost: false, isCurrentPlayer: false },
-  { id: '1', name: 'Eduardo (Você)', score: 850, isHost: true, isCurrentPlayer: true },
-  { id: '2', name: 'Marcos', score: 680, isHost: false, isCurrentPlayer: false },
-  { id: '4', name: 'Felipe', score: 540, isHost: false, isCurrentPlayer: false },
-];
+// const MOCK_FINAL_RANKING = [ ... ];
 
 import { useRanking } from '../hooks/useRanking';
 
@@ -42,8 +36,8 @@ const FinalRankingPage: React.FC = () => {
   const sortedPlayers = [...ranking].sort((a, b) => b.pontuacao - a.pontuacao);
   
   const maxScore = sortedPlayers[0]?.pontuacao || 0;
-  const winners = sortedPlayers.filter(p => p.pontuacao === maxScore);
-  const isTie = winners.length > 1;
+  // const winners = sortedPlayers.filter(p => p.pontuacao === maxScore);
+  // const isTie = winners.length > 1;
 
   const top3 = sortedPlayers.slice(0, 3);
 

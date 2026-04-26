@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PlayerListItem from '../components/brain/PlayerListItem';
 
-// Mock data for initial implementation
-const MOCK_PLAYERS = [
-  { id: '1', name: 'Eduardo (Você)', score: 13, isHost: true, isCurrentPlayer: true },
-  { id: '2', name: 'Marcos', score: 10, isHost: false, isCurrentPlayer: false },
-  { id: '3', name: 'Jessica', score: 14, isHost: false, isCurrentPlayer: false },
-  { id: '4', name: 'Felipe', score: 8, isHost: false, isCurrentPlayer: false },
-];
+// const MOCK_PLAYERS = [ ... ];
 
 import { useRanking } from '../hooks/useRanking';
 import { useGame } from '../contexts/GameContext';

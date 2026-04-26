@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGame } from '../contexts/GameContext';
+// import { useGame } from '../contexts/GameContext';
 import PrimaryButton from '../components/brain/PrimaryButton';
 import SegmentedControl from '../components/brain/SegmentedControl';
 import { useCreateRoom } from '../hooks/useCreateRoom';
@@ -17,7 +17,7 @@ const QUESTIONS_OPTIONS = ["5", "10", "15", "20"];
 const TIME_OPTIONS = ["5s", "15s", "30s"];
 
 const CreateRoomPage: React.FC = () => {
-  const { dispatch } = useGame();
+  // const { dispatch } = useGame();
   const navigate = useNavigate();
   
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);

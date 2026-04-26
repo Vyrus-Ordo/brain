@@ -7,11 +7,11 @@ import SecondaryButton from '../components/brain/SecondaryButton';
 import { useJoinRoom } from '../hooks/useJoinRoom';
 
 const HomePage: React.FC = () => {
-  const { state, dispatch } = useGame();
+  const { state } = useGame();
   const navigate = useNavigate();
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [roomCode, setRoomCode] = useState('');
-  const [error, setError] = useState('');
+  // const [error, setError] = useState('');
   const { joinRoom, loading: isLoading, error: joinError } = useJoinRoom();
 
   const handleCreateRoom = () => {
@@ -27,7 +27,6 @@ const HomePage: React.FC = () => {
     const value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
     if (value.length <= 6) {
       setRoomCode(value);
-      setError('');
     }
   };
 

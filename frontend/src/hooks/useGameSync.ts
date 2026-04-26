@@ -14,7 +14,7 @@ export const useGameSync = (roomCode: string | null) => {
     let roomChannel: any = null;
 
     const fetchRoom = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('salas')
         .select('*')
         .eq('codigo', roomCode)
