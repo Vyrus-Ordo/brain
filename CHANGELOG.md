@@ -9,7 +9,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não publicado]
 
-## [2.0.0] - 2026-05-14
+## 2026-05-14
 
 ### Adicionado
 
@@ -52,7 +52,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
-## [1.0.0] - 2026-04-22
+## 2026-04-22
 
 ### Adicionado
 
@@ -68,9 +68,3 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Componentes do Design System Brain: `BrainLogo`, `TimerBar`, `PrimaryButton`, `SecondaryButton`, `PlayerListItem`, `FeedbackIcon`, `SegmentedControl`, `CodeDisplay`
 - RLS (Row Level Security) para acesso anônimo controlado
 - Documentação: GDD, PRD, Design System, especificações de frontend e backend
-
----
-
-[Não publicado]: https://github.com/Vyrus-Ordo/brain/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/Vyrus-Ordo/brain/compare/v1.0.0...v2.0.0
-[1.0.0]: https://github.com/Vyrus-Ordo/brain/releases/tag/v1.0.0
