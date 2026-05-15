@@ -226,3 +226,9 @@ postgres (infra-network · banco: brain)
 - [prd.md](prd.md) — Requisitos do produto
 - [frontend/docs/spec-frontend.md](frontend/docs/spec-frontend.md) — Especificação do frontend
 - [backend/docs/spec-backend.md](backend/docs/spec-backend.md) — Especificação original (referência)
+
+---
+
+## Licença
+
+MIT © 2026 [Vyrus Order - Brain](https://github.com/Vyrus-Ordo/brain)
