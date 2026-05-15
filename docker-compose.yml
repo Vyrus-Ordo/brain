@@ -1,11 +1,11 @@
 services:
-  brain-backend:
+  backend:
     build: ./backend-node
     env_file: .env
     environment:
       NODE_ENV: production
     networks:
-      - brain
+      - internal
       - web
     restart: unless-stopped
     healthcheck:
@@ -14,19 +14,19 @@ services:
       timeout: 10s
       retries: 3
 
-  brain-frontend:
+  frontend:
     build: ./frontend
     networks:
-      - brain
+      - internal
       - web
     depends_on:
-      brain-backend:
+      backend:
         condition: service_healthy
     restart: unless-stopped
 
 networks:
-  # Rede interna brain (frontend <-> backend)
-  brain:
+  # Rede interna (frontend <-> backend)
+  internal:
     driver: bridge
 
   # Rede compartilhada com infra-nginx, postgres e redis
