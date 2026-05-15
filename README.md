@@ -172,10 +172,6 @@ docker compose -f /opt/brain/docker-compose.yml logs -f
 curl http://localhost:3100/health
 ```
 
-Acesse: **https://brain.privo.app.br**
-
----
-
 ## Atualizar o Deploy
 
 ```bash
