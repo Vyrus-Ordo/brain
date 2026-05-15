@@ -34,14 +34,23 @@ d:\projetos\brain\
 ```
 
 ## 1. Clonar o repositório no VPS
+
+```bash
 git clone <repo> /opt/brain && cd /opt/brain
+```
 
 ## 2. Criar o .env com a senha correta do postgres
+
+```bash
 cp .env.example .env
 nano .env   # preencha DATABASE_URL com a senha real
+```
 
 ## 3. Rodar o script de setup
+
+```bash
 chmod +x vps/setup.sh && ./vps/setup.sh
+```
 
 O script faz automaticamente:
 
@@ -54,7 +63,7 @@ O script faz automaticamente:
 
 Depois basta SSL + nginx:
 
-```shell
+```bash
 certbot certonly --standalone -d brain.privo.app.br
 docker cp vps/nginx-brain.conf infra-nginx:/etc/nginx/conf.d/brain.conf
 docker exec infra-nginx nginx -s reload
