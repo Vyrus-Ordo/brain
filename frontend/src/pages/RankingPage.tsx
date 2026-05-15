@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PlayerListItem from '../components/brain/PlayerListItem';
-
-// const MOCK_PLAYERS = [ ... ];
+import { api } from '../lib/api';
 
 import { useRanking } from '../hooks/useRanking';
 import { useGame } from '../contexts/GameContext';
@@ -29,9 +28,7 @@ const RankingPage: React.FC = () => {
       if (state.currentRound >= (room?.total_perguntas || 10)) {
         // Se for o host, atualiza o status da sala para finalizada
         if (state.isHost && room?.estado !== 'finalizada' && room?.id) {
-          import('../lib/supabase').then(({ supabase }) => {
-            supabase.from('salas').update({ estado: 'finalizada' }).eq('id', room.id).then();
-          });
+          api.updateEstado(room.id, 'finalizada').catch(console.error);
         }
         navigate(`/final/${roomCode}`);
       } else {

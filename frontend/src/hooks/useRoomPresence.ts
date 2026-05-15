@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
+import { getSocket } from '../lib/socket';
 
 export interface Player {
   id: string;
@@ -17,58 +18,24 @@ export const useRoomPresence = (roomCode: string | null) => {
   useEffect(() => {
     if (!roomCode) return;
 
-    let channel: any = null;
     let isMounted = true;
+    const socket = getSocket();
 
-    const setupRealtime = async () => {
+    const onJogadoresAtualizado = (updatedPlayers: Player[]) => {
+      if (isMounted) setPlayers(updatedPlayers);
+    };
+
+    socket.on('jogadores:atualizado', onJogadoresAtualizado);
+    socket.emit('join-sala', { roomCode });
+
+    (async () => {
       try {
-        // 1. Get Room ID first
-        const { data: room, error: roomError } = await supabase
-          .from('salas')
-          .select('id')
-          .eq('codigo', roomCode)
-          .single();
-
+        const room = await api.getSala(roomCode);
         if (!isMounted) return;
-        if (roomError) throw roomError;
-        const roomId = room.id;
-
-        // 2. Initial fetch
-        const { data: playersData, error: playersError } = await supabase
-          .from('jogadores')
-          .select('*')
-          .eq('sala_id', roomId)
-          .order('joined_at', { ascending: true });
-
+        const playersData = await api.getJogadores(room.id);
         if (!isMounted) return;
-        if (playersError) throw playersError;
         setPlayers(playersData || []);
         setLoading(false);
-
-        // 3. Subscribe to changes
-        channel = supabase.channel(`room_players_${roomCode}`);
-        
-        channel
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'jogadores',
-              filter: `sala_id=eq.${roomId}`
-            },
-            (payload: any) => {
-              if (payload.eventType === 'INSERT') {
-                setPlayers(prev => [...prev, payload.new as Player]);
-              } else if (payload.eventType === 'UPDATE') {
-                setPlayers(prev => prev.map(p => p.id === payload.new.id ? (payload.new as Player) : p));
-              } else if (payload.eventType === 'DELETE') {
-                setPlayers(prev => prev.filter(p => p.id === payload.old.id));
-              }
-            }
-          )
-          .subscribe();
-
       } catch (err: any) {
         if (isMounted) {
           console.error('Error fetching players:', err);
@@ -76,15 +43,11 @@ export const useRoomPresence = (roomCode: string | null) => {
           setLoading(false);
         }
       }
-    };
-
-    setupRealtime();
+    })();
 
     return () => {
       isMounted = false;
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      socket.off('jogadores:atualizado', onJogadoresAtualizado);
     };
   }, [roomCode]);
 

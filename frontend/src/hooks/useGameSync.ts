@@ -1,88 +1,76 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { useEffect, useState, useMemo } from 'react';
+import { api } from '../lib/api';
+import { getSocket } from '../lib/socket';
 import { useNavigate } from 'react-router-dom';
 
 export const useGameSync = (roomCode: string | null) => {
   const [room, setRoom] = useState<any>(null);
-  const [channel, setChannel] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!roomCode) return;
 
     let isMounted = true;
-    let roomChannel: any = null;
+    const socket = getSocket();
 
-    const fetchRoom = async () => {
-      const { data } = await supabase
-        .from('salas')
-        .select('*')
-        .eq('codigo', roomCode)
-        .single();
-
-      if (isMounted && data) {
-        setRoom(data);
+    const onSalaAtualizada = (sala: any) => {
+      if (!isMounted) return;
+      setRoom(sala);
+      const currentPath = window.location.pathname;
+      if (sala.estado === 'em_andamento' && currentPath.includes('/lobby/')) {
+        navigate(`/jogo/${roomCode}`);
+      }
+      if (sala.estado === 'finalizada' && currentPath.includes('/jogo/')) {
+        navigate(`/final/${roomCode}`);
       }
     };
 
-    fetchRoom();
+    const onTodosResponderam = (payload: any) => {
+      if (!isMounted) return;
+      window.dispatchEvent(new CustomEvent('brain:todos_responderam', { detail: payload }));
+    };
 
-    roomChannel = supabase.channel(`sala:${roomCode}`, {
-      config: {
-        broadcast: { self: true },
-      },
-    });
-    
-    roomChannel
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'salas',
-          filter: `codigo=eq.${roomCode}`
-        },
-        (payload: any) => {
-          if (!isMounted) return;
-          const newEstado = payload.new.estado;
-          setRoom(payload.new);
-          
-          const currentPath = window.location.pathname;
+    const onJogadorRespondeu = (payload: any) => {
+      if (!isMounted) return;
+      window.dispatchEvent(new CustomEvent('brain:jogador_respondeu', { detail: payload }));
+    };
 
-          // Se o estado mudou para 'em_andamento' e estamos no lobby, navegamos
-          if (newEstado === 'em_andamento' && currentPath.includes('/lobby/')) {
-            navigate(`/jogo/${roomCode}`);
-          }
-          
-          // Se o estado mudou para 'finalizada' e estamos no jogo, navegamos
-          if (newEstado === 'finalizada' && currentPath.includes('/jogo/')) {
-            navigate(`/final/${roomCode}`);
-          }
-        }
-      )
-      .on('broadcast', { event: 'todos_responderam' }, (payload: any) => {
-        if (!isMounted) return;
-        window.dispatchEvent(new CustomEvent('brain:todos_responderam', { detail: payload.payload }));
-      })
-      .on('broadcast', { event: 'jogador_respondeu' }, () => {
-        if (!isMounted) return;
-        window.dispatchEvent(new CustomEvent('brain:jogador_respondeu'));
-      })
-      .on('broadcast', { event: 'proxima_pergunta' }, (payload: any) => {
-        if (!isMounted) return;
-        window.dispatchEvent(new CustomEvent('brain:proxima_pergunta', { detail: payload.payload }));
-      })
-      .subscribe();
+    const onProximaPergunta = (payload: any) => {
+      if (!isMounted) return;
+      window.dispatchEvent(new CustomEvent('brain:proxima_pergunta', { detail: payload }));
+    };
 
-    setChannel(roomChannel);
+    socket.on('sala:atualizada', onSalaAtualizada);
+    socket.on('todos_responderam', onTodosResponderam);
+    socket.on('jogador_respondeu', onJogadorRespondeu);
+    socket.on('proxima_pergunta', onProximaPergunta);
+    socket.emit('join-sala', { roomCode });
+
+    api
+      .getSala(roomCode)
+      .then((data) => { if (isMounted) setRoom(data); })
+      .catch((err) => console.error('Error fetching room:', err));
 
     return () => {
       isMounted = false;
-      if (roomChannel) {
-        supabase.removeChannel(roomChannel);
-      }
+      socket.off('sala:atualizada', onSalaAtualizada);
+      socket.off('todos_responderam', onTodosResponderam);
+      socket.off('jogador_respondeu', onJogadorRespondeu);
+      socket.off('proxima_pergunta', onProximaPergunta);
     };
   }, [roomCode, navigate]);
+
+  // Adaptador estável que emula a API channel.send() do Supabase Realtime
+  const channel = useMemo(
+    () => ({
+      send: (msg: { type: string; event: string; payload?: any }) => {
+        if (msg.type === 'broadcast') {
+          getSocket().emit(`broadcast:${msg.event}`, msg.payload ?? {});
+        }
+      },
+    }),
+    [],
+  );
 
   return { room, channel };
 };

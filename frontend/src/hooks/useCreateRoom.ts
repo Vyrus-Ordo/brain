@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useGame } from '../contexts/GameContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,43 +35,23 @@ export const useCreateRoom = () => {
 
     try {
       const roomCode = generateCode();
-      
-      // 1. Criar a sala
-      const { data: room, error: roomError } = await supabase
-        .from('salas')
-        .insert({
-          codigo: roomCode,
-          tema: config.theme,
-          total_perguntas: config.totalQuestions,
-          timer_segundos: config.timerSeconds,
-          host_id: state.playerId,
-          estado: 'lobby'
-        })
-        .select()
-        .single();
 
-      if (roomError) throw roomError;
-
-      // 2. Inserir o host como jogador
-      const { error: playerError } = await supabase
-        .from('jogadores')
-        .insert({
-          sala_id: room.id,
-          player_id: state.playerId,
-          apelido: state.playerName,
-          is_host: true
-        });
-
-      if (playerError) throw playerError;
-
-      // 3. Atualizar contexto e navegar
-      dispatch({ 
-        type: 'JOIN_ROOM', 
-        payload: { roomCode, isHost: true } 
+      const room = await api.createSala({
+        codigo: roomCode,
+        tema: config.theme,
+        total_perguntas: config.totalQuestions,
+        timer_segundos: config.timerSeconds,
+        host_id: state.playerId,
       });
 
+      await api.upsertJogador(room.id, {
+        player_id: state.playerId,
+        apelido: state.playerName,
+        is_host: true,
+      });
+
+      dispatch({ type: 'JOIN_ROOM', payload: { roomCode, isHost: true } });
       navigate(`/lobby/${roomCode}`);
-      
     } catch (err: any) {
       console.error('Error creating room:', err);
       setError(err.message || 'Erro ao criar sala');

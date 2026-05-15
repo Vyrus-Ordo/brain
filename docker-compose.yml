@@ -1,0 +1,41 @@
+services:
+  brain-backend:
+    build: ./backend-node
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    networks:
+      - brain
+      - data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  brain-frontend:
+    build: ./frontend
+    networks:
+      - brain
+      - web
+    depends_on:
+      brain-backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  # Rede interna brain (frontend <-> backend)
+  brain:
+    driver: bridge
+
+  # Rede compartilhada com o infra-nginx (deve existir previamente)
+  # Crie com: docker network create web
+  web:
+    external: true
+
+  # Rede do docker-compose que contém postgres e redis
+  # Descubra com: docker inspect postgres --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+  data:
+    external: true
+    name: ${DATA_NETWORK:-retroapp4l_default}

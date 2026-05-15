@@ -5,7 +5,7 @@ import { useQuestions } from '../hooks/useQuestions';
 import { useSubmitAnswer } from '../hooks/useSubmitAnswer';
 import { useGameSync } from '../hooks/useGameSync';
 import { useRoomPresence } from '../hooks/useRoomPresence';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import TimerBar from '../components/brain/TimerBar';
 
 type AnswerState = 'normal' | 'selected' | 'correct' | 'wrong' | 'neutral';
@@ -111,26 +111,11 @@ const GamePage: React.FC = () => {
     // let channel: any = null;
 
     const checkAnswers = async () => {
-      const { count, error } = await supabase
-        .from('respostas_rodada')
-        .select('*', { count: 'exact', head: true })
-        .eq('sala_id', room.id)
-        .eq('rodada', state.currentRound);
+      try {
+        const { count } = await api.countRespostas(room.id, state.currentRound);
 
-      if (error) {
-        console.error('[DEBUG] Error checking answers:', error);
-        return;
-      }
-
-      // ...removido debug...
-      if (isMounted && count !== null && count >= players.length && players.length > 0) {
-        // Buscar a resposta correta via RPC
-        const { data: correctIdx, error: answerError } = await supabase
-          .rpc('get_correct_answer', { p_pergunta_id: currentQuestion.id });
-
-        if (answerError) {
-          console.error('[DEBUG] Erro ao buscar resposta correta:', answerError);
-        }
+      if (isMounted && count >= players.length && players.length > 0) {
+        const { indice_correto: correctIdx } = await api.getCorrectAnswer(currentQuestion.id);
 
         // Broadcast para todos os jogadores
         // ...removido debug...
@@ -142,6 +127,9 @@ const GamePage: React.FC = () => {
           });
         }
         revealAnswer(typeof correctIdx === 'number' ? correctIdx : null);
+      }
+      } catch (err) {
+        console.error('[DEBUG] Error checking answers:', err);
       }
     };
 
@@ -216,9 +204,7 @@ const GamePage: React.FC = () => {
   if (!currentQuestion) {
     // Evita loop, avança para a próxima fase se não houver mais perguntas disponíveis
     if (state.isHost && room?.estado !== 'finalizada' && room?.id) {
-      import('../lib/supabase').then(({ supabase }) => {
-        supabase.from('salas').update({ estado: 'finalizada' }).eq('id', room.id).then();
-      });
+      api.updateEstado(room.id, 'finalizada').catch(console.error);
     }
     // Redireciona para o ranking final após um curto delay para garantir atualização
     setTimeout(() => navigate(`/final/${roomCode}`), 0);
