@@ -2,6 +2,8 @@
 
 ## Project Structure
 
+
+```text
 d:\projetos\brain\
 ├── docker-compose.yml          ← orquestra os 2 containers brain
 ├── .env.example                ← template de variáveis
@@ -29,6 +31,7 @@ d:\projetos\brain\
     ├── init-db.sql             ← schema + seed completo (sem RLS)
     ├── nginx-brain.conf        ← config para o infra-nginx
     └── setup.sh                ← script de deploy no VPS
+```
 
 ## 1. Clonar o repositório no VPS
 git clone <repo> /opt/brain && cd /opt/brain
