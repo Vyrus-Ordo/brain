@@ -30,7 +30,13 @@ if [ ! -f .env ]; then
   read -r
 fi
 
-# 4. Build e start
+# 4. Atualizar código (git pull)
+echo ""
+echo ">>> Atualizando código do repositório..."
+git pull
+echo "    Código atualizado."
+
+# 5. Build e start
 echo ""
 echo ">>> Subindo containers brain..."
 docker compose up -d --build
