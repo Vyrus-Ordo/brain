@@ -126,8 +126,6 @@ PORT=3100
 ALLOWED_ORIGINS=https://brain.privo.app.br
 ```
 
-> A senha do postgres está no `.env` do `/opt/infra`.
-
 ### 3. Executar o script de setup
 
 ```bash
