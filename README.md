@@ -1,3 +1,11 @@
+<div align="center">
+
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Stack: React + Node.js](https://img.shields.io/badge/Stack-React%20%2B%20Node.js-blue.svg)
+![PRD: v1.0](https://img.shields.io/badge/PRD-v1.0-green.svg)
+
+</div>
+
 # Brain — Quiz Multiplayer
 
 Quiz multiplayer em tempo real com React, Node.js, Socket.io e PostgreSQL. Deploy via Docker em VPS próprio.
