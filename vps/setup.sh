@@ -6,15 +6,7 @@ set -e
 
 echo "=== Brain App — Setup VPS ==="
 
-# 1. Descobrir rede do postgres
-echo ""
-echo ">>> Descobrindo rede do container postgres..."
-POSTGRES_NETWORK=$(docker inspect postgres \
-  --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' \
-  | awk '{print $1}')
-echo "    Rede encontrada: $POSTGRES_NETWORK"
-
-# 2. Criar banco brain no postgres existente
+# 1. Criar banco brain no postgres existente
 echo ""
 echo ">>> Criando banco de dados 'brain'..."
 docker exec -i postgres psql -U postgres \
@@ -22,18 +14,13 @@ docker exec -i postgres psql -U postgres \
   && echo "    Banco criado." \
   || echo "    Banco já existe, pulando."
 
-# 3. Aplicar schema + seed
+# 2. Aplicar schema + seed
 echo ""
 echo ">>> Aplicando schema e seed..."
 docker exec -i postgres psql -U postgres -d brain < vps/init-db.sql
 echo "    Schema aplicado."
 
-# 4. Garantir que a rede 'web' existe (compartilhada com infra-nginx)
-echo ""
-echo ">>> Garantindo que a rede 'web' existe..."
-docker network create web 2>/dev/null || echo "    Rede 'web' já existe."
-
-# 5. Criar .env se não existir
+# 3. Criar .env se não existir
 if [ ! -f .env ]; then
   echo ""
   echo ">>> Criando .env a partir do .env.example..."
@@ -43,17 +30,11 @@ if [ ! -f .env ]; then
   read -r
 fi
 
-# 6. Build e start
+# 4. Build e start
 echo ""
 echo ">>> Subindo containers brain..."
-DATA_NETWORK="$POSTGRES_NETWORK" docker compose up -d --build
+docker compose up -d --build
 echo "    Containers iniciados."
-
-# 7. Conectar brain-frontend à rede web (para o infra-nginx acessar)
-echo ""
-echo ">>> Conectando brain-frontend à rede 'web'..."
-docker network connect web brain-frontend 2>/dev/null \
-  || echo "    Já conectado."
 
 echo ""
 echo "=== Próximos passos ==="

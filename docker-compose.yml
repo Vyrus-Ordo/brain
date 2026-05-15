@@ -6,7 +6,7 @@ services:
       NODE_ENV: production
     networks:
       - brain
-      - data
+      - web
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3100/health"]
@@ -29,13 +29,8 @@ networks:
   brain:
     driver: bridge
 
-  # Rede compartilhada com o infra-nginx (deve existir previamente)
-  # Crie com: docker network create web
+  # Rede compartilhada com infra-nginx, postgres e redis
+  # Criada pelo /opt/infra/docker-compose.yml
   web:
     external: true
-
-  # Rede do docker-compose que contém postgres e redis
-  # Descubra com: docker inspect postgres --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}'
-  data:
-    external: true
-    name: ${DATA_NETWORK:-retroapp4l_default}
+    name: infra-network
