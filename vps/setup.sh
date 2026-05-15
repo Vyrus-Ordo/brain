@@ -10,14 +10,14 @@ echo "=== Brain App — Setup VPS ==="
 echo ""
 echo ">>> Criando banco de dados 'brain'..."
 docker exec -i postgres psql -U postgres \
-  -c "CREATE DATABASE brain;" 2>/dev/null \
+  -c "CREATE DATABASE braindb;" 2>/dev/null \
   && echo "    Banco criado." \
   || echo "    Banco já existe, pulando."
 
 # 2. Aplicar schema + seed
 echo ""
 echo ">>> Aplicando schema e seed..."
-docker exec -i postgres psql -U postgres -d brain < vps/init-db.sql
+docker exec -i postgres psql -U postgres -d braindb < vps/init-db.sql
 echo "    Schema aplicado."
 
 # 3. Criar .env se não existir

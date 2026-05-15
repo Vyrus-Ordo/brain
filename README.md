@@ -1,100 +1,35 @@
 # Brain — Quiz Multiplayer
 
-## Project Structure
-
-
-```text
-d:\projetos\brain\
-├── docker-compose.yml          ← orquestra os 2 containers brain
-├── .env.example                ← template de variáveis
-├── backend-node/               ← NOVO: backend Node.js
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── src/
-│       ├── index.ts            ← Express + Socket.io
-│       ├── db.ts               ← Pool PostgreSQL
-│       ├── routes/salas.ts     ← toda a API REST
-│       ├── routes/perguntas.ts
-│       └── socket/index.ts     ← relay de broadcasts
-├── frontend/
-│   ├── Dockerfile              ← NOVO: multi-stage build
-│   ├── nginx.conf              ← NOVO: serve SPA + proxy /api + /socket.io
-│   ├── package.json            ← removido supabase, adicionado socket.io-client
-│   ├── vite.config.ts          ← NOVO: proxy para dev local
-│   └── src/
-│       ├── lib/api.ts          ← NOVO: cliente REST
-│       ├── lib/socket.ts       ← NOVO: singleton Socket.io
-│       ├── lib/supabase.ts     ← neutralizado (export null)
-│       └── hooks/              ← todos reescritos
-└── vps/
-    ├── init-db.sql             ← schema + seed completo (sem RLS)
-    ├── nginx-brain.conf        ← config para o infra-nginx
-    └── setup.sh                ← script de deploy no VPS
-```
-
-## 1. Clonar o repositório no VPS
-
-```bash
-git clone <repo> /opt/brain && cd /opt/brain
-```
-
-## 2. Criar o .env com a senha correta do postgres
-
-```bash
-cp .env.example .env
-nano .env   # preencha DATABASE_URL com a senha real
-```
-
-## 3. Rodar o script de setup
-
-```bash
-chmod +x vps/setup.sh && ./vps/setup.sh
-```
-
-O script faz automaticamente:
-
-1. Descobre a rede Docker do postgres existente
-2. Cria o banco brain no postgres compartilhado
-3. Aplica schema + seed (50 perguntas)
-4. Cria a rede web (se não existir)
-5. Faz build e sobe os containers
-6. Conecta brain-frontend à rede do infra-nginx
-
-Depois basta SSL + nginx:
-
-```bash
-certbot certonly --standalone -d brain.privo.app.br
-docker cp vps/nginx-brain.conf infra-nginx:/etc/nginx/conf.d/brain.conf
-docker exec infra-nginx nginx -s reload
-```
-
 Quiz multiplayer em tempo real com React, Node.js, Socket.io e PostgreSQL. Deploy via Docker em VPS próprio.
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Frontend | React 19 + Vite + TypeScript + TailwindCSS |
-| Backend | Node.js + Express + Socket.io |
-| Banco | PostgreSQL (compartilhado no VPS) |
-| Realtime | Socket.io (WebSocket) |
-| Deploy | Docker + nginx |
+| Camada    | Tecnologia                                   |
+|-----------|----------------------------------------------|
+| Frontend  | React 19 + Vite + TypeScript + TailwindCSS   |
+| Backend   | Node.js + Express + Socket.io                |
+| Banco     | PostgreSQL (compartilhado no VPS)            |
+| Realtime  | Socket.io (WebSocket)                        |
+| Deploy    | Docker Compose + nginx reverso               |
+
+---
 
 ## Estrutura do Projeto
 
 ```
 brain/
-├── frontend/          # React + Vite
-├── backend-node/      # Express + Socket.io
-├── backend/           # Migrações SQL legadas (referência)
-├── vps/               # Scripts de deploy
-│   ├── init-db.sql    # Schema + seed do banco
-│   ├── nginx-brain.conf
-│   └── setup.sh
-├── docker-compose.yml
-└── .env.example
+├── frontend/              # React + Vite (SPA + proxy nginx interno)
+├── backend-node/          # Express + Socket.io (porta 3100)
+├── backend/               # Migrações SQL legadas (referência)
+├── vps/
+│   ├── init-db.sql        # Schema + seed do banco (PostgreSQL)
+│   ├── nginx-brain.conf   # Config do infra-nginx para brain.privo.app.br
+│   └── setup.sh           # Script de deploy automatizado
+├── docker-compose.yml     # Orquestra brain-backend e brain-frontend
+└── .env.example           # Template de variáveis de ambiente
 ```
+
+---
 
 ## Desenvolvimento Local
 
@@ -117,7 +52,7 @@ cd backend-node
 npm install
 ```
 
-Crie `backend-node/.env` (ou use variáveis de shell):
+Crie `backend-node/.env`:
 
 ```env
 DATABASE_URL=postgresql://postgres:senha@localhost:5432/brain
@@ -148,68 +83,146 @@ npm run dev
 
 Acesse: http://localhost:5173
 
-O Vite já proxia `/api` e `/socket.io` para `localhost:3100` em desenvolvimento.
+> O Vite proxia `/api` e `/socket.io` para `localhost:3100` automaticamente em desenvolvimento.
+
+---
 
 ## Deploy no VPS
 
-O VPS deve ter Docker e os containers `postgres`, `redis` e `infra-nginx` em execução.
+### Pré-requisitos no VPS
+
+- Docker + Docker Compose instalados
+- Container `postgres` rodando na rede `infra-network`
+- Container `infra-nginx` rodando na rede `infra-network`
+- Domínio `brain.privo.app.br` apontando para o IP do VPS
+
+### 1. Clonar o repositório
 
 ```bash
-# No VPS, na raiz do repositório:
-cp .env.example .env
-nano .env           # preencha DATABASE_URL com a senha do postgres
+git clone <url-do-repo> /opt/brain
+cd /opt/brain
+```
 
-chmod +x vps/setup.sh
-./vps/setup.sh
+### 2. Configurar variáveis de ambiente
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Preencha com os valores reais:
+
+```env
+DATABASE_URL=postgresql://postgres:<SENHA>@postgres:5432/brain
+PORT=3100
+ALLOWED_ORIGINS=https://brain.privo.app.br
+```
+
+> A senha do postgres está no `.env` do `/opt/infra`.
+
+### 3. Executar o script de setup
+
+```bash
+chmod +x vps/setup.sh && ./vps/setup.sh
 ```
 
 O script faz automaticamente:
-1. Descobre a rede Docker do `postgres` existente
-2. Cria o banco `brain` no postgres compartilhado
-3. Aplica schema + seed (50 perguntas, 5 temas)
-4. Faz build e sobe `brain-backend` e `brain-frontend`
-5. Conecta o frontend à rede do `infra-nginx`
 
-Depois configure SSL e nginx:
+1. Cria o banco `brain` no postgres compartilhado (ignora se já existir)
+2. Aplica o schema e seed completo (`vps/init-db.sql`) — tabelas + 50 perguntas
+3. Faz build das imagens Docker (`brain-backend` e `brain-frontend`)
+4. Sobe os containers via `docker compose up -d`
+
+### 4. Configurar SSL (primeira vez)
 
 ```bash
-certbot certonly --standalone -d brain.privo.app.br
+certbot certonly --webroot -w /var/www/html -d brain.privo.app.br
+```
 
+### 5. Adicionar o site ao infra-nginx
+
+```bash
 docker cp vps/nginx-brain.conf infra-nginx:/etc/nginx/conf.d/brain.conf
 docker exec infra-nginx nginx -s reload
 ```
 
-## Variáveis de Ambiente
+O `nginx-brain.conf` configura:
+- Redirect HTTP → HTTPS
+- SSL/TLS com certificado Let's Encrypt
+- Proxy reverso para `brain-frontend:80`
+- Suporte a WebSocket (`/socket.io/`) com upgrade de conexão
+- Headers de segurança (HSTS, X-Frame-Options, X-Content-Type-Options)
 
-| Variável | Descrição |
-|----------|-----------|
-| `DATABASE_URL` | Connection string do PostgreSQL |
-| `PORT` | Porta do backend (padrão: `3100`) |
-| `ALLOWED_ORIGINS` | Origens CORS separadas por vírgula |
-| `DATA_NETWORK` | Rede Docker do postgres (auto-detectada pelo setup.sh) |
-
-> O frontend não tem variáveis de ambiente em produção — todas as chamadas passam pelo nginx interno do container.
-
-## Scripts Úteis
+### 6. Verificar o deploy
 
 ```bash
-# Backend
-npm run dev      # desenvolvimento com hot-reload
-npm run build    # compilar TypeScript
-npm start        # produção (após build)
+# Status dos containers
+docker compose -f /opt/brain/docker-compose.yml ps
 
-# Frontend
-npm run dev      # desenvolvimento
-npm run build    # build para produção
+# Logs em tempo real
+docker compose -f /opt/brain/docker-compose.yml logs -f
+
+# Health check do backend
+curl http://localhost:3100/health
 ```
+
+Acesse: **https://brain.privo.app.br**
+
+---
+
+## Atualizar o Deploy
+
+```bash
+cd /opt/brain
+git pull
+docker compose up -d --build
+```
+
+> O banco **não** é recriado no update. Para aplicar novas migrações SQL:
+> ```bash
+> docker exec -i postgres psql -U postgres -d brain < vps/init-db.sql
+> ```
+
+---
+
+## Arquitetura de Rede (VPS)
+
+```
+Internet
+   │
+   ▼
+infra-nginx (infra-network)
+   │  HTTPS :443      →  brain-frontend:80
+   │  /socket.io/     →  brain-frontend:80  (WebSocket upgrade)
+   ▼
+brain-frontend (nginx interno)
+   │  /api/*          →  brain-backend:3100
+   │  /socket.io/     →  brain-backend:3100
+   │  /*              →  SPA (index.html)
+   ▼
+brain-backend (Express + Socket.io :3100)
+   │
+   ▼
+postgres (infra-network · banco: brain)
+```
+
+---
+
+## Variáveis de Ambiente
+
+| Variável          | Descrição                                         | Exemplo                                           |
+|-------------------|---------------------------------------------------|---------------------------------------------------|
+| `DATABASE_URL`    | Connection string PostgreSQL                      | `postgresql://postgres:senha@postgres:5432/brain` |
+| `PORT`            | Porta do servidor backend                         | `3100`                                            |
+| `ALLOWED_ORIGINS` | Origins permitidas pelo CORS (separadas por `,`)  | `https://brain.privo.app.br`                      |
+
+> O frontend não possui variáveis de ambiente em produção — todas as chamadas passam pelo nginx interno do container.
+
+---
 
 ## Documentação
 
 - [brain-design-system.md](brain-design-system.md) — Design System
 - [prd.md](prd.md) — Requisitos do produto
 - [frontend/docs/spec-frontend.md](frontend/docs/spec-frontend.md) — Especificação do frontend
-- [backend/docs/spec-backend.md](backend/docs/spec-backend.md) — Especificação original (Supabase, referência)
-
-## Licença
-
-Defina a licença do projeto aqui.
+- [backend/docs/spec-backend.md](backend/docs/spec-backend.md) — Especificação original (referência)
